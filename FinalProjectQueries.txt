@@ -1,0 +1,781 @@
+--**********************************************************************************************************************************
+
+--Creating the Database (Create & Inserts)
+
+--**********************************************************************************************************************************
+
+-- CREATE TABLES
+
+CREATE TABLE customer
+(
+  customerid VARCHAR(5) 	NOT NULL,
+  cname 	VARCHAR(70) 	NOT NULL,
+  email 	VARCHAR(255) 	NOT NULL,
+  street 	VARCHAR(30) 	NOT NULL,
+  city 		VARCHAR(25) 	NOT NULL,
+  state 	VARCHAR(15) 	NOT NULL,
+  zip 		VARCHAR(10) 	NOT NULL,
+  phonenumber 	VARCHAR(20) 	DEFAULT 'not provided',
+  PRIMARY KEY (customerid));
+
+CREATE TABLE employee
+(
+  employeeid 	VARCHAR(5) 	NOT NULL,
+  role 		VARCHAR(30) 	DEFAULT 'Sales Associate',
+  empname 	VARCHAR(70) 	NOT NULL,
+  street 	VARCHAR(40) 	NOT NULL,
+  city 		VARCHAR(20) 	NOT NULL,
+  state 	VARCHAR(30) 	NOT NULL,
+  zip 		VARCHAR(10) 	NOT NULL,
+  phonenumber 	VARCHAR(20) 	NOT NULL,
+  PRIMARY KEY (employeeid) );
+
+-- INDEX
+CREATE INDEX emp_role_index ON employee(role);
+-- DROP INDEX emp_role_index;
+
+CREATE TABLE orders
+(
+  orderid 	VARCHAR(6) 	NOT NULL,
+  odate 	DATE 		NOT NULL,
+  customerid 	VARCHAR(5) 	NOT NULL,
+  employeeid 	VARCHAR(5) 	DEFAULT '1',
+  PRIMARY KEY (orderid),
+  FOREIGN KEY (customerid) REFERENCES customer(customerid) ON DELETE CASCADE, -- remove record if referenced customerid is deleted
+  FOREIGN KEY (employeeid) REFERENCES employee(employeeid) ON DELETE SET NULL -- set field to null if employee has been removed
+);
+
+
+CREATE TABLE inventory
+(
+  inventoryid 	VARCHAR(6)	 	 NOT NULL,
+  idate 	DATE 		 NOT NULL,
+  purchaseprice NUMERIC(4,2)	 NOT NULL	CHECK (purchaseprice > 0), -- checks the price is a positive number
+  PRIMARY KEY (inventoryid)
+);
+
+CREATE TABLE supplier 
+(
+  suppentryid 	VARCHAR(6) 	NOT NULL,
+  supplierid 	VARCHAR(6) 	NOT NULL,
+  compname 	VARCHAR(100) 	NOT NULL,
+  street 	VARCHAR(30) 	NOT NULL,
+  city 		VARCHAR(25) 	NOT NULL,
+  state 	VARCHAR(15) 	NOT NULL,
+  zip 		VARCHAR(20) 	NOT NULL,
+  phonenumber 	VARCHAR(20) 	NOT NULL,
+  inventoryid 	VARCHAR(6) 	NOT NULL,
+  PRIMARY KEY (suppentryid),
+  FOREIGN KEY (inventoryid) REFERENCES Inventory(inventoryid) ON DELETE SET NULL -- set inventoryid to null if deleted in parent table
+);
+
+CREATE TABLE customerinquiry
+(
+  custinqid 	VARCHAR(6) 	NOT NULL,
+  customerid 	VARCHAR(5) 	NOT NULL,
+  descrprob 	VARCHAR(255),
+  faq 		VARCHAR(255),
+  employeeid 	VARCHAR(5) 	DEFAULT '1',
+  PRIMARY KEY (custinqid),
+  FOREIGN KEY (customerid) REFERENCES Customer(customerid) ON DELETE CASCADE, -- remove record if referenced customerid is deleted
+  FOREIGN KEY (employeeid) REFERENCES Employee(employeeid) ON DELETE SET NULL -- set employeeid to null if deleted in parent table
+);
+
+CREATE TABLE discount
+(
+  code 		VARCHAR(15) 	NOT NULL,
+  discamount 	NUMERIC(4,2) 	NOT NULL,
+  expdate 	DATE 		NOT NULL,
+  PRIMARY KEY (code)
+);
+
+CREATE TABLE book
+(
+  bookid 	VARCHAR(6) 	NOT NULL,
+  title 	VARCHAR(150) 	NOT NULL,
+  isbn 		VARCHAR(20) 	NOT NULL,
+  stockquantity INT 		NOT NULL	CHECK (stockquantity >= 0), -- checks there's not a negative number
+  author 	VARCHAR(70) 	NOT NULL,
+  price 	NUMERIC(4,2) 	NOT NULL	CHECK (price > 0), -- checks the price is a positive number
+  inventoryid 	VARCHAR(6) 	NOT NULL,
+  genre VARCHAR(20) DEFAULT 'Fantasy',
+  PRIMARY KEY (bookid),
+  FOREIGN KEY (inventoryid) REFERENCES inventory(inventoryid) ON DELETE CASCADE, -- remove record if referenced inventoryid is deleted
+  UNIQUE (isbn));
+
+CREATE TABLE orderitem
+(
+  orderitemid 	VARCHAR(6) 	NOT NULL,
+  orderid 	VARCHAR(6) 	NOT NULL,
+  bookid 	VARCHAR(6) 	NOT NULL,
+  quantity 	INT 		NOT NULL,
+  PRIMARY KEY (orderitemid),
+  FOREIGN KEY (orderid) REFERENCES orders(orderid), -- implied that this is a ON DELETE RESTRICT
+  FOREIGN KEY (bookid) REFERENCES book(bookid) ON DELETE CASCADE -- remove record if referenced bookid is deleted
+);
+
+CREATE TABLE sales
+(
+  salesid 	VARCHAR(6) 	NOT NULL,
+  sdate 	DATE 		NOT NULL,
+  typecard 	VARCHAR(20) 	NOT NULL,
+  cardnumber 	VARCHAR(20) 	NOT NULL,
+  orderid 	VARCHAR(6) 	NOT NULL,
+  code 		VARCHAR(15),
+  PRIMARY KEY (salesid),
+  FOREIGN KEY (orderid) REFERENCES orders(orderid), -- implied that this is a ON DELETE RESTRICT
+  FOREIGN KEY (code) REFERENCES discount(code) -- implied that this is a ON DELETE RESTRICT
+);
+
+CREATE SEQUENCE empid_seq
+INCREMENT BY 1
+START WITH 1;
+
+CREATE SEQUENCE oikey_seq
+INCREMENT BY 100
+START WITH 1000;
+
+
+-- INSERTS
+
+INSERT INTO customer (customerid, cname, email, street, city, state, zip, phonenumber)
+VALUES ('C123', 'Finn Human', 'finh@gmail.com', '123 Main Street', 'Los Angeles', 'CA', '90291', '217-555-4567');
+INSERT INTO customer (customerid, cname, email, street, city, state, zip, phonenumber)
+VALUES ('C234', 'Jake Dog', 'jakedoggers@yahoo.com', '34 Maple Ave', 'Houston', 'TX', '38291', '314-555-9876');
+INSERT INTO customer (customerid, cname, email, street, city, state, zip, phonenumber)
+VALUES ('C345', 'Bee Moe', 'bmo10110@gmail.com', '123 Tree Street', 'Ames', 'IA', '60391', '515-555-6789');
+INSERT INTO customer (customerid, cname, email, street, city, state, zip, phonenumber)
+VALUES ('C456', 'Emily Davis', 'e.davis313@outlook.com', '91 Elbow Road', 'Minneapolis', 'MN', '39012', '612-555-1234');
+INSERT INTO customer (customerid, cname, email, street, city, state, zip, phonenumber)
+VALUES ('C567', 'Craig Creek', 'ccreek@hotmail.com', '721 Creek Street', 'APlace', 'OH', '59283', '614-555-8765');
+INSERT INTO customer (customerid, cname, email, street, city, state, zip, phonenumber)
+VALUES ('C527', 'Fire Princess', 'lavagir21@hotmail.com', '182 Hot Street Lane', 'Hotfurd', 'AK', '53918', '611-525-8765');
+INSERT INTO customer (customerid, cname, email, street, city, state, zip, phonenumber)
+VALUES ('C789', 'Ice King', 'guntherlover12@gmail.com', '791 Cold Ave', 'Sckold', 'AT', '59283', '914-552-8785');
+INSERT INTO customer (customerid, cname, email, street, city, state, zip, phonenumber)
+VALUES ('C910', 'Darwin Waterson', 'fishboy21@yahoo.com', '422 Gumball Lane', 'Corckville', 'MA', '39853', '954-925-8265');
+INSERT INTO customer (customerid, cname, email, street, city, state, zip, phonenumber)
+VALUES ('C101', 'PB Bubblegum', 'pbubbles3@gmail.com', '910 OOdom Lane', 'OOsville', 'CT', '09233', '934-025-8235');
+INSERT INTO customer (customerid, cname, email, street, city, state, zip, phonenumber)
+VALUES ('C112', 'Slade Villain', 'hateteentitans1@yahoo.com', '911 Villain Road', 'Lair', 'GA', '89833', '210-925-1765');
+
+INSERT INTO employee (employeeid, role, empname, street, city, state, zip, phonenumber)
+VALUES (NEXTVAL('empid_seq'), 'Manager', 'Erza Scarlet', '200 Park Ave', 'Los Angeles', 'CA', '90001', '217-555-1234'); 
+INSERT INTO employee (employeeid, role, empname, street, city, state, zip, phonenumber)
+VALUES(NEXTVAL('empid_seq'), 'Cashier', 'Natsu Dragneel', '350 Second Street', 'Houston', 'TX', '77002', '314-381-5678');
+INSERT INTO employee (employeeid, role, empname, street, city, state, zip, phonenumber)
+VALUES(NEXTVAL('empid_seq'), 'Sales Associate', 'Lucy Heartfilia', '120 Broadway Rd', 'New York', 'NY', '10001', '244-390-2931');
+INSERT INTO employee (employeeid, role, empname, street, city, state, zip, phonenumber)
+VALUES(NEXTVAL('empid_seq'), 'Sales Associate', 'Carla Cat', '480 Lincoln Rd', 'Miami', 'FL', '33101', '729-293-9281');
+INSERT INTO employee (employeeid, role, empname, street, city, state, zip, phonenumber)
+VALUES(NEXTVAL('empid_seq'), 'Cashier', 'Gray Fillibuster', '500 Michigan Ave', 'Chicago', 'IL', '60601', '389-291-8392');
+
+-- used TO_DATE to format the date values
+INSERT INTO orders (orderid, odate, customerid, employeeid)
+VALUES ('W932JF', TO_DATE('2024-03-13','YYYY-MM-DD'), 'C123', '1'); 
+INSERT INTO orders (orderid, odate, customerid, employeeid)
+VALUES ('M014P', TO_DATE('2024-02-28', 'YYYY-MM-DD'), 'C234', '2');
+INSERT INTO orders (orderid, odate, customerid, employeeid)
+VALUES ('O819Q', TO_DATE('2024-08-05', 'YYYY-MM-DD'), 'C345', '3');
+INSERT INTO orders (orderid, odate, customerid, employeeid)
+VALUES ('B910D', TO_DATE('2024-03-19', 'YYYY-MM-DD'), 'C456', '4');
+INSERT INTO orders (orderid, odate, customerid, employeeid)
+VALUES ('I961L', TO_DATE('2024-06-22', 'YYYY-MM-DD'), 'C567', '5');
+
+-- used TO_DATE to format the date values
+INSERT INTO inventory (inventoryid, idate, purchaseprice)
+VALUES ('001', TO_DATE('2024-02-02', 'YYYY-MM-DD'), 12.50); 
+INSERT INTO inventory (inventoryid, idate, purchaseprice)
+VALUES ('002', TO_DATE('2024-01-04','YYYY-MM-DD'), 15.75);
+INSERT INTO inventory (inventoryid, idate, purchaseprice)
+VALUES ('003', TO_DATE('2024-03-03','YYYY-MM-DD'), 10.20);
+INSERT INTO inventory (inventoryid, idate, purchaseprice)
+VALUES ('004', TO_DATE('2024-02-06', 'YYYY-MM-DD'), 14.00);
+INSERT INTO inventory (inventoryid, idate, purchaseprice)
+VALUES ('005', TO_DATE('2024-01-09', 'YYYY-MM-DD'), 13.30);
+INSERT INTO inventory (inventoryid, idate, purchaseprice)
+VALUES ('006', TO_DATE('2024-03-09', 'YYYY-MM-DD'), 17.30);
+INSERT INTO inventory (inventoryid, idate, purchaseprice)
+VALUES ('007', TO_DATE('2024-08-09', 'YYYY-MM-DD'), 6.10);
+INSERT INTO inventory (inventoryid, idate, purchaseprice)
+VALUES ('008', TO_DATE('2024-04-09', 'YYYY-MM-DD'), 9.30);
+INSERT INTO inventory (inventoryid, idate, purchaseprice)
+VALUES ('009', TO_DATE('2024-09-12', 'YYYY-MM-DD'), 13.30);
+INSERT INTO inventory (inventoryid, idate, purchaseprice)
+VALUES ('010', TO_DATE('2024-07-28', 'YYYY-MM-DD'), 14.30);
+
+INSERT INTO supplier (suppentryid, supplierid, compname, street,  city, state, zip,  phonenumber, inventoryid)
+VALUES ('01', 'S920', 'The Book Haven', '123 Elm Street', 'Springfield', 'IL', '62701', '217-555-7425', '001');
+INSERT INTO supplier (suppentryid, supplierid, compname, street,  city, state, zip,  phonenumber, inventoryid)
+VALUES ('02','S341', 'Literary Treasures', '56 Beacon Hill Rd', 'Boston', 'MA', '02108', '617-555-1836', '002');
+INSERT INTO supplier (suppentryid, supplierid, compname, street,  city, state, zip,  phonenumber, inventoryid)
+VALUES ('03','S482', 'Pages & Quills', '789 Oaks Ave', 'Ankeny', 'IA', '94103', '415-555-3972', '003');
+INSERT INTO supplier (suppentryid, supplierid, compname, street,  city, state, zip,  phonenumber, inventoryid)
+VALUES ('04','S029', 'Storybound Books', '245 Maple Street', 'Denver', 'CO', '80202', '303-555-9284', '005');
+INSERT INTO supplier (suppentryid, supplierid, compname, street,  city, state, zip,  phonenumber, inventoryid)
+VALUES ('05','S201', 'The Literary Nook', '98 River Lane', 'Nashville', 'TN', '37219', '615-555-4678', '004');
+INSERT INTO supplier (suppentryid, supplierid, compname, street,  city, state, zip,  phonenumber, inventoryid)
+VALUES ('06','S920', 'The Book Haven', '123 Elm Street', 'Springfield', 'IL', '62701', '217-555-7425', '006');
+INSERT INTO supplier (suppentryid, supplierid, compname, street,  city, state, zip,  phonenumber, inventoryid)
+VALUES ('07','S341', 'Literary Treasures', '56 Beacon Hill Rd', 'Boston', 'MA', '02108', '617-555-1836', '007');
+INSERT INTO supplier (suppentryid, supplierid, compname, street,  city, state, zip,  phonenumber, inventoryid)
+VALUES ('08','S482', 'Pages & Quills', '789 Oaks Ave', 'Ankeny', 'IA', '94103', '415-555-3972', '008');
+INSERT INTO supplier (suppentryid, supplierid, compname, street,  city, state, zip,  phonenumber, inventoryid)
+VALUES ('09','S029', 'Storybound Books', '245 Maple Street', 'Denver', 'CO', '80202', '303-555-9284', '009');
+INSERT INTO supplier (suppentryid, supplierid, compname, street,  city, state, zip,  phonenumber, inventoryid)
+VALUES ('10','S201', 'The Literary Nook', '98 River Lane', 'Nashville', 'TN', '37219', '615-555-4678', '010');
+
+INSERT INTO customerinquiry (custinqid, customerid, descrprob, faq, employeeid)
+VALUES ('Q18902', 'C123', 'Did not get order number', 'What is the return policy?', '4');
+INSERT INTO customerinquiry (custinqid, customerid, descrprob, faq, employeeid)
+VALUES ('Q92013', 'C234', 'Wanted to know if certain book was in stock', 'Where are you located?', '3');
+INSERT INTO customerinquiry (custinqid, customerid, descrprob, faq, employeeid)
+VALUES ('Q73829', 'C123', 'Left their phone', NULL, '2');
+INSERT INTO customerinquiry (custinqid, customerid, descrprob, faq, employeeid)
+VALUES ('Q27391', 'C456', 'Wanted to make a return but couldn’t find receipt', NULL, '5');
+INSERT INTO customerinquiry (custinqid, customerid, descrprob, faq, employeeid)
+VALUES ('Q40281', 'C567', 'Wanted to know if there was a discount code', NULL, '1');
+
+-- used TO_NUMBER to ensure the values are retrieved correctly
+INSERT INTO discount (code, discamount, expdate)
+VALUES ('DISC10', 10.00, TO_DATE('2024-09-30', 'YYYY-MM-DD')); 
+INSERT INTO discount (code, discamount, expdate)
+VALUES ('DISC5', 5.00, TO_DATE('2024-12-31', 'YYYY-MM-DD'));
+INSERT INTO discount (code, discamount, expdate)
+VALUES ('DISC25', 25.00, TO_DATE('2024-12-31', 'YYYY-MM-DD')); 
+INSERT INTO discount (code, discamount, expdate)
+VALUES ('SUMMER20', 20.00, TO_DATE('2024-08-01', 'YYYY-MM-DD'));
+INSERT INTO discount (code, discamount, expdate)
+VALUES ('FALL15', 15.00, TO_DATE('2024-11-01', 'YYYY-MM-DD'));
+
+-- used TO_NUMBER to ensure the values are retrieved correctly
+INSERT INTO book (bookid, title, isbn, stockquantity, author, price, inventoryid)
+VALUES ('B123', 'Whispers of the Night', '978-1-63450-678-1', 103, 'Emily Cartwright', 14.99, '001'); 
+INSERT INTO book (bookid, title, isbn,  stockquantity, author, price, inventoryid)
+VALUES ('B124', 'The Quantum Paradox', '978-0-98215-369-8', 89, 'Marcus Vance', 22.50, '002');
+INSERT INTO book (bookid, title, isbn,  stockquantity, author, price, inventoryid)
+VALUES ('B225', 'Beneath the Iron Sky', '978-1-75160-452-9', 75, 'Natalie Summers', 18.75, '003');
+INSERT INTO book (bookid, title, isbn,  stockquantity, author, price, inventoryid)
+VALUES ('B352', 'Echoes of Forgotten Worlds', '978-0-94523-184-3', 30, 'Damian Hawthorne', 19.99, '004');
+INSERT INTO book (bookid, title, isbn,  stockquantity, author, price, inventoryid)
+VALUES ('B930', 'The Lost Chronicles of Elaria', '978-1-62045-731-5', 45, 'Sarah Kensington', 17.20, '005');
+INSERT INTO book (bookid, title, isbn, stockquantity, author, price, inventoryid)
+VALUES ('B931', 'Into the Unknown', '978-1-22145-711-5', 20, 'Elsa Iceland', 12.20, '006');
+/*SKIP*/
+INSERT INTO book (bookid, title, isbn,  stockquantity, author, price, inventoryid)
+VALUES ('B831', 'Adventure Tales', '978-1-22645-711-5', 40, 'PBS Kids', 11.20, '007'); 
+
+
+INSERT INTO book (bookid, title, isbn,  stockquantity, author, price, inventoryid)
+VALUES ('B711', 'All dogs go to heaven', '978-1-22142-711-5', TO_NUMBER(109), 'Jack Stiff', TO_NUMBER(12.70), '008');
+INSERT INTO book (bookid, title, isbn,  stockquantity, author, price, inventoryid)
+VALUES ('B031', 'Away my child', '978-1-22145-781-5', TO_NUMBER(90), 'Elizabeth Beats', TO_NUMBER(18.20), '009');
+INSERT INTO book (bookid, title, isbn,  stockquantity, author, price, inventoryid)
+VALUES ('B938', 'Fly Fly Birdie', '978-0-82145-211-5', TO_NUMBER(50), 'Kristen Kurt', TO_NUMBER(22.20), '010');
+
+INSERT INTO orderitem (orderitemid, orderid, bookid, quantity)
+VALUES (oikey_seq.NEXTVAL, 'W932JF', 'B123', 2);
+INSERT INTO orderitem (orderitemid, orderid, bookid, quantity)
+VALUES (oikey_seq.NEXTVAL, 'W932JF', 'B225', 1);
+INSERT INTO orderitem (orderitemid, orderid, bookid, quantity)
+VALUES (oikey_seq.NEXTVAL, 'O819Q', 'B931', 1);
+INSERT INTO orderitem (orderitemid, orderid, bookid, quantity)
+VALUES (oikey_seq.NEXTVAL, 'M014P', 'B938', 3);
+INSERT INTO orderitem (orderitemid, orderid, bookid, quantity)
+VALUES (oikey_seq.NEXTVAL, 'B910D', 'B930', 1);
+INSERT INTO orderitem (orderitemid, orderid, bookid, quantity)
+VALUES (oikey_seq.NEXTVAL, 'I961L', 'B711', 1);
+
+-- used TO_CHAR to convert the date to a char string. Had to use TO_DATE again since the type in the create table is DATE
+INSERT INTO sales (salesid, sdate, typecard, cardnumber, orderid, code)
+VALUES ('140240', TO_DATE(TO_CHAR('2024-03-12'), 'YYYY-MM-DD'), 'Credit', '1234567812345678', 'W932JF', NULL);  
+INSERT INTO sales (salesid, sdate, typecard, cardnumber, orderid, code)
+VALUES ('150250', TO_DATE('2024-02-29','YYYY-MM-DD'), 'Credit', '2345678923456789', 'O819Q', 'DISC10');
+INSERT INTO sales (salesid, sdate, typecard, cardnumber, orderid, code)
+VALUES ('160260', TO_DATE('2024-08-05','YYYY-MM-DD'), 'Debit', '3456789034567890', 'M014P', NULL);
+INSERT INTO sales (salesid, sdate, typecard, cardnumber, orderid, code)
+VALUES ('170270', TO_DATE('2024-03-19','YYYY-MM-DD'), 'Credit', '4567890145678901', 'B910D', 'DISC5');
+INSERT INTO sales (salesid, sdate, typecard, cardnumber, orderid, code)
+VALUES ('180280', TO_DATE('2024-06-22','YYYY-MM-DD'), 'Credit', '5678901256789012', 'I961L', 'FALL15');
+
+
+UPDATE sales
+SET sdate = TO_DATE('2024-03-12', 'YYYY-MM-DD')
+WHERE salesid = '150250';
+
+--**********************************************************************************************************************************
+
+--Create and Populate Dimension/Fact Table(s)
+
+--**********************************************************************************************************************************
+
+
+CREATE TABLE BooksDim
+(
+  BookKey INT NOT NULL,
+  BookId VARCHAR(6) NOT NULL,  
+  Title VARCHAR(255) NOT NULL,
+  Author VARCHAR(100) NOT NULL,
+  StockQuantity INT NOT NULL,
+  Genre VARCHAR(100) NOT NULL,
+  Price NUMERIC(5,2) NOT NULL,
+  PRIMARY KEY (BookKey)
+);
+
+CREATE TABLE EmployeeDim
+(
+  EmployeeKey INT NOT NULL,
+  EmployeeID INT NOT NULL,
+  Role VARCHAR(80) Default 'Sales Associate',
+  EmpName VARCHAR(100) NOT NULL,
+  phoneNumber VARCHAR(20) NOT NULL,
+  PRIMARY KEY (EmployeeKey)
+);
+
+CREATE TABLE CustomerDim
+(
+  CustomerKey INT NOT NULL,
+  CustomerID VARCHAR(5) NOT NULL,
+  Cname VARCHAR(100) NOT NULL,
+  Email VARCHAR(255) NOT NULL,
+  PhoneNumber VARCHAR(20) NOT NULL,
+  PRIMARY KEY (CustomerKey)
+);
+
+CREATE TABLE CalendarDim
+(
+  CalendarKey INT NOT NULL,
+  FullDate DATE NOT NULL,
+  DayOfWeek VARCHAR(100) NOT NULL,
+  DayOfMonth INT NOT NULL,
+  Month VARCHAR(100) NOT NULL,
+  Year INT NOT NULL,
+  PRIMARY KEY (CalendarKey)
+);
+
+CREATE TABLE OrdersDim
+(
+  OrdersKey INT NOT NULL,
+  OrderID VARCHAR(6) NOT NULL,
+  orderDate DATE NOT NULL,
+  customerID VARCHAR(5) NOT NULL,
+  employeeID INT NOT NULL,
+  PRIMARY KEY (OrdersKey)
+);
+
+CREATE TABLE OrderItemDim
+(
+  OrderItemKey INT NOT NULL,
+  OrderItemID VARCHAR(6) NOT NULL,
+  OrderID VARCHAR(6) NOT NULL,
+  BookID VARCHAR(6) NOT NULL,
+  Quantity INT NOT NULL,
+  PRIMARY KEY (OrderItemKey)
+);
+
+CREATE TABLE SalesFact
+(
+  salesfactKey INT NOT NULL,  
+  BookKey INT NOT NULL,
+  EmployeeKey INT NOT NULL,
+  CustomerKey INT NOT NULL,
+  CalendarKey INT NOT NULL,
+  OrdersKey INT NOT NULL,
+  OrderItemKey INT NOT NULL,
+  TotalAmount FLOAT NOT NULL,
+  TotalUnitsSold INT NOT NULL,
+  PRIMARY KEY (salesfactKey),  
+  FOREIGN KEY (BookKey) REFERENCES BooksDim(BookKey),
+  FOREIGN KEY (EmployeeKey) REFERENCES EmployeeDim(EmployeeKey),
+  FOREIGN KEY (CustomerKey) REFERENCES CustomerDim(CustomerKey),
+  FOREIGN KEY (CalendarKey) REFERENCES CalendarDim(CalendarKey),
+  FOREIGN KEY (OrdersKey) REFERENCES OrdersDim(OrdersKey),
+  FOREIGN KEY (OrderItemKey) REFERENCES OrderItemDim(OrderItemKey)
+);
+
+--INSERT QUERIES 
+
+--Book
+
+CREATE SEQUENCE bKey_Seq
+START WITH 1
+INCREMENT BY  1;
+
+INSERT INTO BooksDim (BookKey, BookID, Title, StockQuantity, Author, Genre, Price)
+SELECT bKey_Seq.nextval, bookid, title, stockquantity, author, genre, price 
+FROM book;        
+                                   
+           
+-- Employee           
+CREATE SEQUENCE empKey_Seq
+START WITH 1
+INCREMENT BY  1;  
+
+
+INSERT INTO EmployeeDim (EmployeeKey, EmployeeID, Role, EmpName, PhoneNumber)
+SELECT empKey_Seq.nextval, EmployeeID, Role, EmpName, PhoneNumber
+FROM Employee;
+
+--Customer 
+
+CREATE SEQUENCE custKey_Seq
+START WITH 1
+INCREMENT BY  1;
+
+INSERT INTO CustomerDim (CustomerKey, CustomerID, Cname, Email, PhoneNumber)
+SELECT custKey_Seq.nextval, CustomerID, Cname, Email, PhoneNumber
+FROM Customer;
+
+           
+-- Calendar
+CREATE SEQUENCE calKey_Seq
+START WITH 1
+INCREMENT BY  1; 
+
+DECLARE
+    
+    CURSOR orders_c IS
+       SELECT DISTINCT oDate
+       FROM orders;
+       
+    cal_rec orders_c%rowtype;
+    
+BEGIN
+    OPEN orders_c;
+    
+    LOOP
+        FETCH orders_c INTO cal_rec;
+        EXIT WHEN orders_c%notfound;
+        
+        INSERT INTO CalendarDim 
+            VALUES(calKey_Seq.nextval, cal_rec.oDate, 
+                  TO_CHAR(cal_rec.oDate, 'DAY'),
+                   EXTRACT(DAY FROM cal_rec.oDate),
+                  TO_CHAR(cal_rec.oDate, 'MONTH'),
+                  EXTRACT(YEAR FROM cal_rec.oDate));
+   END LOOP;
+   CLOSE orders_c;
+END;
+/
+
+
+--Orders
+
+CREATE SEQUENCE oKey_Seq
+START WITH 1
+INCREMENT BY  1; 
+
+INSERT INTO OrdersDim (OrdersKey, OrderID, orderDate, customerID, employeeID)
+SELECT oKey_Seq.nextval, orderid, odate, customerid, employeeid
+FROM Orders;
+                   
+           
+--OrderItem
+CREATE SEQUENCE oiDimKey_Seq
+START WITH 1
+INCREMENT BY  1; 
+
+INSERT INTO OrderItemDim(OrderItemKey, OrderItemID, OrderID, BookID, Quantity)
+SELECT oiDimKey_Seq.nextval, OrderItemID, OrderID, BookID, Quantity
+FROM orderitem; 
+                                   
+
+--SalesFactTable
+CREATE SEQUENCE sftKey_Seq
+START WITH 1
+INCREMENT BY  1; 
+
+DECLARE
+    
+    CURSOR sales_c IS 
+        SELECT b.bookKey, e.EmployeeKey, c.CustomerKey, cal.CalendarKey, o.OrdersKey, oi.OrderItemKey,
+                   SUM(b.price * oi.quantity) AS totalAmount, SUM(oi.quantity) AS totalUnitsSold
+        FROM booksDim b, 
+             employeeDim e, 
+             customerDim c, 
+             calendarDim cal, 
+             ordersDim o, 
+             orderitemDim oi          
+        WHERE oi.bookid = b.bookid AND 
+              o.customerid = c.customerid AND 
+              o.orderid = oi.orderid AND 
+              o.employeeid = e.employeeid AND 
+              o.orderdate = cal.fullDate
+        GROUP BY b.bookKey, e.employeeKey, c.CustomerKey, cal.CalendarKey, o.OrdersKey, oi.OrderItemKey;
+                   
+    sales_rec sales_c%rowtype;               
+
+BEGIN
+     OPEN sales_c;              
+    
+     LOOP              
+        FETCH sales_c INTO sales_rec;
+        EXIT WHEN sales_c%notfound;
+     INSERT INTO salesFact 
+        VALUES (sftKey_Seq.nextval, sales_rec.bookKey, sales_rec.employeeKey, sales_rec.customerKey, sales_rec.CalendarKey,
+               sales_rec.OrdersKey, sales_rec.OrderItemKey, sales_rec.totalAmount, sales_rec.totalUnitsSold);
+    END LOOP;
+    CLOSE sales_c;               
+END;
+/
+
+--**********************************************************************************************************************************
+
+--Extra feature: Notifications (seen only in the application)
+
+--**********************************************************************************************************************************
+
+CREATE TABLE notification (
+	nID	INT NOT NULL,
+	msg VARCHAR(255) NOT NULL,
+	salesID VARCHAR(6) NOT NULL,
+	timeExp VARCHAR(50) NOT NULL,
+	status CHAR(1) DEFAULT 'N',
+	PRIMARY KEY (nID),
+	FOREIGN KEY (salesid) REFERENCES sales(salesid)
+);
+
+CREATE SEQUENCE notif_seq
+INCREMENT BY 1
+START WITH 1;
+
+CREATE OR REPLACE TRIGGER TRIGGER_NOTIF 
+AFTER INSERT ON sales
+FOR EACH ROW
+BEGIN 
+	INSERT INTO notification (nID, msg, salesID, timeExp)
+		VALUES(notif_seq.nextval, 'Alert! New sale has processed.', :NEW.salesid, TO_CHAR(CURRENT_TIMESTAMP, 'HH:MI AM'));
+END;
+/
+
+
+--Insert Queries for Notifications 
+INSERT INTO orders (orderid, odate, customerid, employeeid)
+VALUES ('D260E', TO_DATE('2024-10-22', 'YYYY-MM-DD'), 'C910', '5');
+
+INSERT INTO orderitem (orderitemid, orderid, bookid, quantity)
+VALUES (oikey_seq.NEXTVAL, 'D260E', 'B930', 2);
+INSERT INTO orderitem (orderitemid, orderid, bookid, quantity)
+VALUES (oikey_seq.NEXTVAL, 'D260E', 'B711', 2);
+
+--**********************************************************************************************************************************
+
+--PL/SQL Integrated throughout the application (besides the ones used above):
+
+--**********************************************************************************************************************************
+
+-- For the tables on the Books 2024 page. The purpose is to show the pivot tables
+
+SELECT * FROM 
+(
+    SELECT b.author AS "Author Name", 
+           b.title AS "Book Title", 
+           SUM(s.totalUnitsSold) AS "Total Sold", 
+           SUM(s.totalAmount) AS "Total Revenue" 
+    FROM booksdim b, salesfact s, orderitemdim oi, ordersdim o, calendardim c 
+    WHERE s.bookKey = b.bookKey AND 
+          s.orderitemKey = oi.orderitemKey AND 
+          o.orderdate = c.fulldate AND 
+          c.dayofWeek = 'WEDNESDAY' AND 
+          b.genre = 'Fantasy'
+    GROUP BY b.author, b.title
+)
+PIVOT 
+(
+   SUM("Total Sold") AS "Total Sold", 
+   SUM("Total Revenue") AS "Total Revenue"
+   FOR "Author Name" IN ('Emily Cartwright' AS "Emily Cartwright",
+                         'Sarah Kensington' AS "Sarah Kensington",
+                         'Elsa Iceland' AS "Elsa Iceland",
+                         'Jack Stiff' AS "Jack Stiff",
+                        'Kristen Kurt' AS "Kristen Kurt",
+                        'Natalie Summers' AS "Natalie Summers")
+);
+
+--**********************************************************************************************************************************
+
+--Second table 
+
+SELECT * FROM 
+(
+	SELECT e.empName AS "Employee Name", 
+		   b.title AS "Book Title", 
+		   b.genre, 
+		   SUM(s.totalUnitsSold) as "Total Sold",
+		   SUM(s.totalAmount) AS "Total Revenue"
+	FROM salesfact s, employeedim e, booksdim b, ordersdim o, orderitemdim oi
+	WHERE s.bookkey = b.bookkey AND 
+	      s.employeeKey = e.employeekey AND 
+	      s.orderskey = o.orderskey AND 
+	      s.orderitemkey = oi.orderitemkey
+	GROUP BY e.empName, b.genre, b.title
+) 
+PIVOT 
+(
+   SUM("Total Sold") AS "Total Sold",
+   SUM("Total Revenue") AS "Total Revenue"
+   FOR Genre IN ('Fantasy' AS Fantasy, 'Science' AS Science)
+);   
+
+--**********************************************************************************************************************************
+
+-- On the customer page, I have a search number of orders per customer feature that uses PL/SQL
+
+DECLARE
+    num_order NUMBER;
+    
+BEGIN
+    SELECT COUNT(orderid)
+    INTO num_order
+    FROM ORDERS
+    WHERE customerid = :P6_LOAD_CUST;
+    htp.p('<b>Total orders completed: </b>' || num_order || '<br>');
+  
+Exception
+    when no_data_found
+    then num_order := 0;
+    htp.p('<b>Total orders completed: </b>' || num_order || '<br>');
+END;
+
+--**********************************************************************************************************************************
+
+-- In the book page, there's a search number of orders per customer feature that uses PL/SQL
+                 
+DECLARE
+    b_quantity NUMBER;
+    
+BEGIN
+    SELECT SUM(quantity)
+    INTO b_quantity
+    FROM ORDERITEM
+    WHERE bookid = :P15_LOAD_CHART;
+
+    htp.p('<b>Quantity Sold: </b>' ||b_quantity || '<br>');
+    
+EXCEPTION
+    when no_data_found then 
+    b_quantity := 0;
+    htp.p('<b>quantity sold: </b>' || b_quantity || '<br>');
+END;
+--**********************************************************************************************************************************
+
+--In the Inventory page, there's feature that finds the book title and supplier based on the inventory ID using PL/SQL
+
+DECLARE 
+    bookname VARCHAR(100);
+    suppliername VARCHAR(100);
+
+BEGIN 
+    SELECT b.title, s.compname 
+    INTO bookname, suppliername
+    FROM book b, supplier s
+    WHERE b.inventoryid = :P22_LOAD_BOOK AND s.inventoryid = :P22_LOAD_BOOK;
+
+    htp.p('<b>Book Title: </br>' || bookname || '<br>');
+    htp.p('<b>Supplier Name: </br>' || suppliername || '<br>');
+    
+
+
+EXCEPTION 
+    WHEN no_data_found THEN 
+        bookname := 'Not found';
+        suppliername := 'Not found';
+        htp.p('<b>Book Title: </br>' || bookname || '<br>');
+        htp.p('<b>Supplier Name: </br>' || suppliername || '<br>'); 
+END;
+
+
+--**********************************************************************************************************************************
+
+--PL/SQL Backup tables and logs (optional for implemention later on):
+
+--**********************************************************************************************************************************
+
+--FOR DELETE
+
+CREATE TABLE orders_backup
+(
+    orderid INT NOT NULL,
+    odate DATE NOT NULL,
+    customerid VARCHAR(5) NOT NULL,
+    employeeid VARCHAR(5) DEFAULT '1',
+    timeExp TIMESTAMP, 
+    PRIMARY KEY (orderid)
+);
+
+--from docs.oracle.com (formatting SQL * PLUS Reports)
+COLUMN timeExp FORMAT A29;
+
+-- BEFORE DELETE trigger
+CREATE OR REPLACE TRIGGER BEFORE_DELETE
+BEFORE DELETE ON orders
+FOR EACH ROW
+
+BEGIN
+INSERT INTO orders_backup (orderid, odate, customerid, employeeid,  timeExp)
+  VALUES (:OLD.orderid, :OLD.odate, :OLD.customerid, :OLD.employeeid, CURRENT_TIMESTAMP);
+END;
+/
+
+--Displays how this works in action. Beware, this will delete from the Orders table
+DELETE FROM orders WHERE employeeid = 1;
+SELECT * FROM orders;
+SELECT * FROM orders_backup;
+
+--**********************************************************************************************************************************
+
+- FOR UPDATE 
+
+-- BEFORE UPDATE trigger
+CREATE OR REPLACE TRIGGER BEFORE_UPDATE
+BEFORE UPDATE ON orders
+FOR EACH ROW
+
+BEGIN
+  INSERT INTO orders_backup (orderid, odate, customerid, employeeid, totalPrice, timeExp)
+  VALUES (:OLD.orderid, :OLD.odate, :OLD.customerid, :OLD.employeeid, :OLD.totalPrice, 
+  CURRENT_TIMESTAMP);
+END;
+/
+
+--Example of this in action
+UPDATE orders SET employeeid = 1 WHERE employeeid = 5;
+UPDATE orders SET employeeid = 5 WHERE employeeid = 2;
+/
+
+SELECT * FROM orders;
+SELECT * FROM orders_backup;
+
+--**********************************************************************************************************************************
+
+- FOR INSERT
+
+-- BEFORE INSERT trigger
+CREATE TABLE new_orders_backup(
+    orderid INT NOT NULL,
+    odate DATE NOT NULL,
+    customerid VARCHAR(5) NOT NULL,
+    employeeid VARCHAR(5) DEFAULT '1',
+    timeExp TIMESTAMP  NOT NULL,
+    PRIMARY KEY (orderid)
+);
+
+COLUMN timeExp FORMAT A29;
+
+CREATE OR REPLACE TRIGGER BEFORE_INSERT
+BEFORE INSERT ON orders
+FOR EACH ROW
+
+BEGIN
+  INSERT INTO new_orders_backup (orderid, odate, customerid, employeeid, timeExp)
+  VALUES (:NEW.orderid, :NEW.odate, :NEW.customerid, :NEW.employeeid, CURRENT_TIMESTAMP);
+END;
+/
+
+INSERT INTO test_orders (orderid, odate, customerid, employeeid)
+  VALUES (ID_SEQ.nextval, TO_DATE('2023-02-13', 'YYYY-MM-DD'), 'C123', '2');
+
+--Displays how this works
+SELECT * FROM orders;
+SELECT * FROM new_orders_backup;
+

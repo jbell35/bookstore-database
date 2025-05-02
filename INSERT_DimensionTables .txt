@@ -1,0 +1,216 @@
+--Book Dimension
+
+CREATE SEQUENCE bKey_Seq
+START WITH 1
+INCREMENT BY  1;
+
+INSERT INTO BooksDim (BookKey, BookID, Title, StockQuantity, Author, Genre, Price)
+    VALUES (bKey_Seq.nextval, 'B123', 'Whispers of the Night', 103, 'Emily Cartwright', 'Fantasy', 14.99);
+
+INSERT INTO BooksDim (BookKey, BookID, Title, StockQuantity, Author, Genre, Price)
+    VALUES (bKey_Seq.nextval,'B124', 'The Quantum Paradox', 89, 'Marcus Vance', 'Science', 22.50);
+
+INSERT INTO BooksDim (BookKey, BookID, Title, StockQuantity, Author, Genre, Price)
+    VALUES (bKey_Seq.nextval,'B225', 'Beneath the Iron Sky', 75, 'Natalie Summers', 'Fantasy', 18.75);
+
+INSERT INTO BooksDim (BookKey, BookID, Title, StockQuantity, Author, Genre, Price)
+    VALUES (bKey_Seq.nextval, 'B352', 'Echoes of Forgotten Worlds', 30, 'Damian Hawthorne', 'Fantasy', 19.99);           
+
+INSERT INTO BooksDim (BookKey, BookID, Title, StockQuantity, Author, Genre, Price)
+    VALUES (bKey_Seq.nextval, 'B930', 'The Lost Chronicles of Elaria', 45, 'Sarah Kensington', 'Fantasy', 17.20);
+            
+INSERT INTO BooksDim (BookKey, BookID, Title, StockQuantity, Author, Genre, Price)
+    VALUES (bKey_Seq.nextval, 'B931', 'Into the Unknown', 20, 'Elsa Iceland', 'Fantasy', 12.20);           
+            
+INSERT INTO BooksDim (BookKey, BookID, Title, StockQuantity, Author, Genre, Price)
+    VALUES (bKey_Seq.nextval, 'B711', 'All dogs go to heaven', 109, 'Jack Stiff', 'Fantasy', 12.70);      
+ 
+INSERT INTO BooksDim (BookKey, BookID, Title, StockQuantity, Author, Genre, Price)
+    VALUES (bKey_Seq.nextval, 'B031', 'Away my child', 90, 'Elizabeth Beats', 'Fantasy', 18.20);           
+            
+INSERT INTO BooksDim (BookKey, BookID, Title, StockQuantity, Author, Genre, Price)
+    VALUES (bKey_Seq.nextval,  'B938', 'Fly Fly Birdie', 50, 'Kristen Kurt', 'Fantasy', 22.20);          
+                                   
+           
+-- Employee Dimension          
+CREATE SEQUENCE empKey_Seq
+START WITH 1
+INCREMENT BY  1;  
+
+INSERT INTO EmployeeDim (EmployeeKey, EmployeeID, Role, EmpName, PhoneNumber)
+    VALUES(empKey_Seq.nextval, 1, 'Manager', 'Erza Scarlet', '217-555-1234'); 
+
+INSERT INTO EmployeeDim (EmployeeKey, EmployeeID, Role, EmpName, PhoneNumber)
+    VALUES(empKey_Seq.nextval, 2, 'Cashier', 'Natsu Dragneel', '314-381-5678');            
+
+ INSERT INTO EmployeeDim (EmployeeKey, EmployeeID, Role, EmpName, PhoneNumber)
+    VALUES(empKey_Seq.nextval, 3, 'Sales Associate', 'Lucy Heartfilia', '244-390-2931');          
+           
+INSERT INTO EmployeeDim (EmployeeKey, EmployeeID, Role, EmpName, PhoneNumber)
+    VALUES(empKey_Seq.nextval, 4, 'Sales Associate', 'Carla Cat', '729-293-9281');           
+           
+INSERT INTO EmployeeDim (EmployeeKey, EmployeeID, Role, EmpName, PhoneNumber)
+    VALUES(empKey_Seq.nextval, 5, 'Cashier', 'Gray Fillibuster', '389-291-8392');
+
+
+--Customer Dimension
+
+CREATE SEQUENCE custKey_Seq
+START WITH 1
+INCREMENT BY  1;
+
+INSERT INTO CustomerDim (CustomerKey, CustomerID, Cname, Email, PhoneNumber)
+    VALUES(custKey_Seq.nextval, 'C123', 'Finn Human', 'finh@gmail.com', '217-555-4567');
+           
+INSERT INTO CustomerDim (CustomerKey, CustomerID, Cname, Email, PhoneNumber)
+    VALUES(custKey_Seq.nextval, 'C234', 'Jake Dog', 'jakedoggers@yahoo.com', '314-555-9876');           
+           
+INSERT INTO CustomerDim (CustomerKey, CustomerID, Cname, Email, PhoneNumber)
+    VALUES(custKey_Seq.nextval, 'C345', 'Bee Moe', 'bmo10110@gmail.com', '515-555-6789');           
+           
+ INSERT INTO CustomerDim (CustomerKey, CustomerID, Cname, Email, PhoneNumber)
+    VALUES(custKey_Seq.nextval, 'C456', 'Emily Davis', 'e.davis313@outlook.com','612-555-1234');          
+           
+ INSERT INTO CustomerDim (CustomerKey, CustomerID, Cname, Email, PhoneNumber)
+    VALUES(custKey_Seq.nextval, 'C567', 'Craig Creek', 'ccreek@hotmail.com', '614-555-8765');           
+           
+INSERT INTO CustomerDim (CustomerKey, CustomerID, Cname, Email, PhoneNumber)
+    VALUES(custKey_Seq.nextval, 'C527', 'Fire Princess', 'lavagir21@hotmail.com', '611-525-8765');           
+           
+INSERT INTO CustomerDim (CustomerKey, CustomerID, Cname, Email, PhoneNumber)
+    VALUES(custKey_Seq.nextval, 'C789', 'Ice King', 'guntherlover12@gmail.com', '914-552-8785');            
+           
+INSERT INTO CustomerDim (CustomerKey, CustomerID, Cname, Email, PhoneNumber)
+    VALUES(custKey_Seq.nextval, 'C910', 'Darwin Waterson', 'fishboy21@yahoo.com','954-925-8265');
+                      
+INSERT INTO CustomerDim (CustomerKey, CustomerID, Cname, Email, PhoneNumber)
+    VALUES(custKey_Seq.nextval,  'C101', 'PB Bubblegum', 'pbubbles3@gmail.com', '934-025-8235');          
+           
+INSERT INTO CustomerDim (CustomerKey, CustomerID, Cname, Email, PhoneNumber)
+    VALUES(custKey_Seq.nextval, 'C112', 'Slade Villain', 'hateteentitans1@yahoo.com', '210-925-1765');
+           
+-- Calendar Dimension
+CREATE SEQUENCE calKey_Seq
+START WITH 1
+INCREMENT BY  1; 
+
+DECLARE
+    
+    CURSOR orders_c IS
+       SELECT DISTINCT oDate
+       FROM orders;
+       
+    cal_rec orders_c%rowtype;
+    
+BEGIN
+    OPEN orders_c;
+    
+    LOOP
+        FETCH orders_c INTO cal_rec;
+        EXIT WHEN orders_c%notfound;
+        
+        INSERT INTO CalendarDim 
+            VALUES(calKey_Seq.nextval, cal_rec.oDate, 
+                  TO_CHAR(cal_rec.oDate, 'DAY'),
+                   EXTRACT(DAY FROM cal_rec.oDate),
+                  TO_CHAR(cal_rec.oDate, 'MONTH'),
+                  EXTRACT(YEAR FROM cal_rec.oDate));
+   END LOOP;
+   CLOSE orders_c;
+END;
+/
+
+
+--Orders Dimension
+
+CREATE SEQUENCE oKey_Seq
+START WITH 1
+INCREMENT BY  1; 
+
+DECLARE
+    CURSOR order_c IS 
+        SELECT orderid, odate, customerid, employeeid
+        FROM orders;
+    order_rec order_c%rowtype;               
+                   
+BEGIN
+    OPEN order_c;
+    
+     LOOP              
+         FETCH order_c INTO order_rec;
+         EXIT WHEN order_c%notfound;
+         
+         INSERT INTO OrdersDim
+             VALUES (oKey_Seq.nextval, order_rec.orderid, order_rec.odate, 
+                    order_rec.customerid, order_rec.employeeid, 
+                    (SELECT SUM(b.price * oi.quantity)
+                     FROM orderitem oi
+                     JOIN book b ON oi.bookid = b.bookid
+                     WHERE oi.orderid = order_rec.orderid));
+    END LOOP;
+    CLOSE order_c;               
+END;
+/
+                   
+           
+--OrderItem Dimension
+CREATE SEQUENCE oiKey_Seq
+START WITH 1
+INCREMENT BY  1; 
+                                   
+INSERT INTO OrderItemDim(OrderItemKey, OrderItemID, OrderID, BookID, Quantity)
+    VALUES(oiKey_Seq.nextval, 1000,	'W932JF',	'B123',	2);
+
+INSERT INTO OrderItemDim(OrderItemKey, OrderItemID, OrderID, BookID, Quantity)
+    VALUES(oiKey_Seq.nextval, 1200,	'O819Q', 'B931', 2);
+
+INSERT INTO OrderItemDim(OrderItemKey, OrderItemID, OrderID, BookID, Quantity)
+    VALUES(oiKey_Seq.nextval, 1300,	'M014P', 'B938', 3);
+
+INSERT INTO OrderItemDim(OrderItemKey, OrderItemID, OrderID, BookID, Quantity)
+    VALUES(oiKey_Seq.nextval, 1400,	'B910D', 'B930', 1);
+
+INSERT INTO OrderItemDim(OrderItemKey, OrderItemID, OrderID, BookID, Quantity)
+    VALUES(oiKey_Seq.nextval, 1500,	'I961L', 'B711', 1);
+
+INSERT INTO OrderItemDim(OrderItemKey, OrderItemID, OrderID, BookID, Quantity)
+    VALUES(oiKey_Seq.nextval, 1600,	'B910D', 'B124', 2);
+
+--SalesFactTable Dimension
+CREATE SEQUENCE sftKey_Seq
+START WITH 1
+INCREMENT BY  1; 
+
+DECLARE
+    
+    CURSOR sales_c IS 
+        SELECT b.bookKey, e.EmployeeKey, c.CustomerKey, cal.CalendarKey, o.OrdersKey, oi.OrderItemKey,
+                   SUM(b.price * oi.quantity) AS totalAmount, SUM(oi.quantity) AS totalUnitsSold
+        FROM booksDim b, 
+             employeeDim e, 
+             customerDim c, 
+             calendarDim cal, 
+             ordersDim o, 
+             orderitemDim oi          
+        WHERE oi.bookid = b.bookid AND 
+              o.customerid = c.customerid AND 
+              o.orderid = oi.orderid AND 
+              o.employeeid = e.employeeid AND 
+              o.orderdate = cal.fullDate
+        GROUP BY b.bookKey, e.employeeKey, c.CustomerKey, cal.CalendarKey, o.OrdersKey, oi.OrderItemKey;
+                   
+    sales_rec sales_c%rowtype;               
+
+BEGIN
+     OPEN sales_c;              
+    
+     LOOP              
+        FETCH sales_c INTO sales_rec;
+        EXIT WHEN sales_c%notfound;
+     INSERT INTO salesFact 
+        VALUES (sftKey_Seq.nextval, sales_rec.bookKey, sales_rec.employeeKey, sales_rec.customerKey, sales_rec.CalendarKey,
+               sales_rec.OrdersKey, sales_rec.OrderItemKey, sales_rec.totalAmount, sales_rec.totalUnitsSold);
+    END LOOP;
+    CLOSE sales_c;               
+END;
+/
